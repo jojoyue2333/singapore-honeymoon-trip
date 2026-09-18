@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>新加坡蜜月三日 · 9.26–9.28</title>
+<style>
+:root{
+  --bg:#f7f2e7; --paper:#fffdf6; --ink:#2f3b33; --sub:#6b7a6e;
+  --line:#d8cfba; --accent:#c25b4e; --gold:#b98a2f;
+  --d1:#3e6fa3; --d2:#d07a2d; --d3:#8a5fa8;
+  --card:#fffdf6; --shadow:0 2px 10px rgba(80,70,40,.10);
+  --ok:#3e8a5a; --warn:#b5541f; --chip:#efe7d3;
+}
+html.dark{
+  --bg:#1c2420; --paper:#242e28; --ink:#e8e4d5; --sub:#9aa899;
+  --line:#3a463f; --accent:#e0837a; --gold:#d4aa54;
+  --d1:#7aa7d4; --d2:#e8a25c; --d3:#b693d1;
+  --card:#242e28; --shadow:0 2px 12px rgba(0,0,0,.35);
+  --ok:#7cc49a; --warn:#e59a63; --chip:#31402f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,-apple-system,sans-serif;
+  line-height:1.65; transition:background .4s,color .4s;
+  background-image:radial-gradient(circle at 20% 10%, rgba(185,138,47,.05), transparent 40%),
+                   radial-gradient(circle at 85% 90%, rgba(62,111,163,.05), transparent 40%);
+}
+.wrap{max-width:860px;margin:0 auto;padding:18px 16px 60px}
+header{text-align:center;padding:26px 8px 10px}
+h1{font-size:clamp(24px,5vw,34px);letter-spacing:2px}
+h1 .heart{color:var(--accent)}
+.subtitle{color:var(--sub);margin-top:6px;font-size:14px;letter-spacing:1px}
+.clocks{display:flex;justify-content:center;gap:10px;margin-top:10px;flex-wrap:wrap;font-size:12px;color:var(--sub)}
+.clocks span{background:var(--chip);padding:3px 10px;border-radius:20px;border:1px solid var(--line)}
+.theme-toggle{position:fixed;top:14px;right:14px;z-index:99;background:var(--card);border:1px solid var(--line);
+  color:var(--ink);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;box-shadow:var(--shadow)}
+section{margin-top:26px}
+h2{font-size:19px;display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px dashed var(--line);flex-wrap:wrap}
+h2 .no{background:var(--accent);color:#fff;font-size:12px;width:22px;height:22px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;flex:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow);margin-top:12px}
+
+/* ===== 倒计时 ===== */
+#focus{border:2px solid var(--accent);position:relative;overflow:hidden}
+#focus .focus-label{text-align:center;color:var(--sub);font-size:13px;letter-spacing:4px}
+#focus .focus-event{text-align:center;font-size:clamp(18px,4vw,24px);font-weight:700;margin:6px 0 2px}
+#focus .focus-sub{text-align:center;color:var(--sub);font-size:13px}
+#focus .focus-time{text-align:center;font-size:12px;color:var(--sub);margin-top:4px}
+.count{display:flex;justify-content:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+.count .unit{text-align:center;min-width:70px}
+.count .num{font-size:clamp(30px,7vw,46px);font-weight:800;font-variant-numeric:tabular-nums;
+  color:var(--accent);background:var(--chip);border-radius:12px;padding:6px 4px;border:1px solid var(--line)}
+.count .lab{font-size:12px;color:var(--sub);margin-top:4px;letter-spacing:2px}
+.next-list{margin-top:16px;border-top:1px dashed var(--line);padding-top:10px}
+.next-item{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:5px 2px;color:var(--sub)}
+.next-item .nl-t{font-variant-numeric:tabular-nums;flex:none;color:var(--ink)}
+.next-item.done{opacity:.38;text-decoration:line-through}
+.now-active{color:var(--accent);font-weight:700}
+
+/* ===== 地图 ===== */
+.map-note{font-size:12px;color:var(--sub);margin-bottom:6px}
+svg text{font-family:inherit}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;margin-top:10px;justify-content:center}
+.legend i{display:inline-block;width:26px;height:0;border-top:3px solid;border-radius:2px;vertical-align:middle;margin-right:5px}
+
+/* ===== 地点 ===== */
+.place{cursor:pointer;border-bottom:2px dotted var(--accent);transition:background .15s}
+.place:hover{background:rgba(194,91,78,.12)}
+.place::after{content:" 📍";font-size:.8em;opacity:.55}
+.badge{display:inline-block;font-size:11px;padding:1px 8px;border-radius:10px;margin-left:6px;vertical-align:1px}
+.badge.book{background:#f6e3e0;color:#b5541f}
+html.dark .badge.book{background:#4a2f22;color:#e59a63}
+.badge.cash{background:#f3ecd7;color:#8a6d1f}
+html.dark .badge.cash{background:#443c1e;color:#d4c37a}
+
+/* ===== 预订 ===== */
+.book-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:12px}
+.bk{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ok);border-radius:12px;padding:12px 14px}
+.bk h3{font-size:15px;margin-bottom:6px}
+.bk .row{font-size:13px;color:var(--sub);display:flex;gap:6px}
+.bk .row b{color:var(--ink);font-weight:600}
+.bk.none{border-left-color:var(--line);opacity:.75}
+
+/* ===== 逐日行程 ===== */
+.day{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-top:14px;overflow:hidden;box-shadow:var(--shadow)}
+.day-head{padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.day-head h3{font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dot{width:12px;height:12px;border-radius:50%;flex:none;display:inline-block}
+.day-head .arrow{transition:transform .3s;color:var(--sub);flex:none}
+.day.open .day-head .arrow{transform:rotate(180deg)}
+.day-route{display:none;border-top:2px dashed var(--line);padding:14px 16px;background:rgba(0,0,0,.02)}
+html.dark .day-route{background:rgba(255,255,255,.02)}
+.day.open .day-route{display:block}
+.route-strip{overflow-x:auto;padding-bottom:6px}
+.route-svg{min-width:640px}
+.nav-all{margin-top:10px;border:none;color:#fff;font-size:13px;padding:8px 18px;border-radius:20px;cursor:pointer;font-family:inherit;background:var(--accent)}
+.tl{padding:6px 16px 16px}
+.tl-row{display:flex;gap:14px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.tl-row:last-child{border-bottom:none}
+.tl-time{flex:none;width:86px;font-variant-numeric:tabular-nums;font-size:13px;font-weight:700;color:var(--sub);padding-top:1px}
+.tl-body{font-size:14px;flex:1}
+.tl-body .meal{background:var(--chip);border-radius:10px;padding:6px 10px;margin-top:4px;font-size:13px}
+.tz{font-size:10px;color:var(--sub);border:1px solid var(--line);border-radius:6px;padding:0 4px;margin-left:4px;vertical-align:2px;letter-spacing:1px}
+.warn-inline{color:var(--warn);font-size:12.5px}
+
+/* ===== 待办 ===== */
+.todo{list-style:none;counter-reset:td}
+.todo li{counter-increment:td;display:flex;gap:10px;padding:8px 2px;border-bottom:1px dashed var(--line);font-size:14px}
+.todo li::before{content:counter(td);flex:none;width:24px;height:24px;border-radius:50%;background:var(--chip);
+  border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:var(--sub);margin-top:2px}
+.todo .tag{flex:none;font-size:11px;background:var(--chip);border-radius:8px;padding:1px 8px;height:fit-content;margin-top:2px;color:var(--sub)}
+.todo b{color:var(--accent)}
+.deadline{color:var(--warn);font-size:12.5px}
+
+/* ===== 贴士 ===== */
+.tips{list-style:none}
+.tips li{padding:8px 2px 8px 30px;border-bottom:1px dashed var(--line);font-size:14px;position:relative}
+.tips li::before{content:"◆";position:absolute;left:6px;color:var(--gold);font-size:12px}
+.tips b{color:var(--accent)}
+
+footer{text-align:center;color:var(--sub);font-size:12px;margin-top:40px;line-height:2}
+@media(max-width:560px){
+  .tl-time{width:74px;font-size:12px}
+  .count .unit{min-width:60px}
+  .route-svg{min-width:560px}
+}
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeBtn" onclick="cycleTheme()">🌙 夜间</button>
+<div class="wrap">
+
+<header>
+  <h1><span class="heart">♥</span> 新加坡 · 蜜月三日 <span class="heart">♥</span></h1>
+  <div class="subtitle">2026.09.26 (六) — 09.28 (一) ｜ 舒适档 · 美食优先 · 零海滩</div>
+  <div class="subtitle" style="font-size:12px">Day3 晚经新山飞亚庇，开启大马 11 日蜜月下半场</div>
+  <div class="clocks">
+    <span id="clockSG">🇸🇬 新加坡 --:--:--</span>
+    <span id="clockLocal">📍 你的时区 --:--:--</span>
+  </div>
+</header>
+
+<!-- ============ 1. 此刻关注 ============ -->
+<section>
+  <h2><span class="no">1</span>此刻关注</h2>
+  <div class="card" id="focus">
+    <div class="focus-label">距 下 一 个 行 程 节 点</div>
+    <div class="focus-event" id="feLabel">—</div>
+    <div class="focus-sub" id="feSub">—</div>
+    <div class="focus-time" id="feTime">—</div>
+    <div class="count">
+      <div class="unit"><div class="num" id="cdD">--</div><div class="lab">天</div></div>
+      <div class="unit"><div class="num" id="cdH">--</div><div class="lab">时</div></div>
+      <div class="unit"><div class="num" id="cdM">--</div><div class="lab">分</div></div>
+      <div class="unit"><div class="num" id="cdS">--</div><div class="lab">秒</div></div>
+    </div>
+    <div class="next-list" id="nextList"></div>
+  </div>
+</section>
+
+<!-- ============ 2. 总览地图 ============ -->
+<section>
+  <h2><span class="no">2</span>行程总览地图</h2>
+  <div class="map-note">🗺️ 手绘示意图（非严格比例）· 点击带 📍 的地点名可打开 Google 地图 · 点每日标题可展开当日路线</div>
+  <div class="card">
+    <svg viewBox="0 0 720 560" role="img" aria-label="新加坡三日行程手绘地图" style="width:100%;height:auto;display:block">
+      <defs>
+        <filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="4"/></filter>
+        <filter id="rough2"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.5"/></filter>
+      </defs>
+      <path d="M30,470 q30,-14 60,0 t60,0 t60,0 t60,0 t60,0 t60,0 t60,0 t60,0 t60,0 t60,0 t60,0" stroke="var(--line)" fill="none" stroke-width="2" stroke-linecap="round" filter="url(#rough2)"/>
+      <path d="M60,505 q30,-14 60,0 t60,0 t60,0 t60,0 t60,0 t60,0 t60,0 t60,0 t60,0" stroke="var(--line)" fill="none" stroke-width="2" stroke-linecap="round" filter="url(#rough2)" opacity=".6"/>
+      <path d="M520,80 q20,-12 40,0 t40,0" stroke="var(--line)" fill="none" stroke-width="2" stroke-linecap="round" filter="url(#rough2)" opacity=".6"/>
+      <!-- 马来西亚柔佛 -->
+      <path d="M-10,-10 L730,-10 L730,120 Q600,150 480,130 Q380,115 300,138 Q220,158 160,150 Q80,142 -10,160 Z" fill="var(--chip)" stroke="var(--line)" stroke-width="2.5" filter="url(#rough)"/>
+      <text x="360" y="42" text-anchor="middle" font-size="15" fill="var(--sub)" letter-spacing="6">马 来 西 亚 · 柔 佛</text>
+      <g transform="translate(96,78)">
+        <circle r="9" fill="var(--d3)" stroke="var(--paper)" stroke-width="2.5"/>
+        <text y="-16" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">✈️ 士乃机场</text>
+        <text y="24" text-anchor="middle" font-size="10" fill="var(--sub)">9.28 起飞→亚庇</text>
+      </g>
+      <g transform="translate(300,88)">
+        <circle r="6" fill="var(--sub)" opacity=".7"/>
+        <text y="-12" text-anchor="middle" font-size="12" fill="var(--sub)">新山市区</text>
+      </g>
+      <!-- 新加坡岛 -->
+      <path d="M150,175 Q200,160 260,172 Q330,158 400,170 Q470,160 540,180 Q610,196 660,232 Q688,258 670,292 Q640,330 580,338 Q560,352 520,344 Q470,360 420,350 Q340,362 280,348 Q210,340 170,310 Q135,280 148,240 Q142,205 150,175 Z" fill="var(--paper)" stroke="var(--ink)" stroke-width="3" filter="url(#rough)"/>
+      <!-- 兀兰关卡 -->
+      <g transform="translate(212,196)">
+        <rect x="-8" y="-8" width="16" height="16" rx="4" fill="var(--warn)" stroke="var(--paper)" stroke-width="2.5"/>
+        <text y="-16" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">🛂 兀兰关卡</text>
+        <text y="26" text-anchor="middle" font-size="10" fill="var(--sub)">9.28 · 14:45 过境</text>
+      </g>
+      <!-- 市区放大圈 -->
+      <circle cx="470" cy="255" r="118" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="5 5"/>
+      <text x="470" y="126" text-anchor="middle" font-size="11" fill="var(--gold)">放大：市中心 ↓</text>
+      <!-- 住宿 -->
+      <g transform="translate(400,300)">
+        <text y="-14" text-anchor="middle" font-size="20">🏨</text>
+        <text y="16" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">Studio M 酒店</text>
+        <text y="31" text-anchor="middle" font-size="10" fill="var(--sub)">罗伯逊码头 · 住 2 晚</text>
+      </g>
+      <!-- 市区点 -->
+      <g transform="translate(620,250)" font-size="12">
+        <circle r="7" fill="var(--d1)" stroke="var(--paper)" stroke-width="2.5"/>
+        <text y="-12" text-anchor="middle" font-weight="700" fill="var(--ink)">✈️ 樟宜机场</text>
+        <text y="22" text-anchor="middle" font-size="10" fill="var(--sub)">9.26 · 14:00 落地</text>
+      </g>
+      <g transform="translate(560,300)" font-size="12">
+        <circle r="6" fill="var(--d1)" stroke="var(--paper)" stroke-width="2.5"/>
+        <text y="-10" text-anchor="middle" font-weight="700" fill="var(--ink)">滨海湾花园 🌳</text>
+      </g>
+      <g transform="translate(540,330)" font-size="12">
+        <circle r="6" fill="var(--d1)" stroke="var(--paper)" stroke-width="2.5"/>
+        <text y="18" text-anchor="middle" font-weight="700" fill="var(--ink)">鱼尾狮 · 老巴刹</text>
+      </g>
+      <g transform="translate(330,300)" font-size="12">
+        <circle r="6" fill="var(--d2)" stroke="var(--paper)" stroke-width="2.5"/>
+        <text y="-10" text-anchor="middle" font-weight="700" fill="var(--ink)">中峇鲁 🥣</text>
+      </g>
+      <g transform="translate(360,340)" font-size="12">
+        <circle r="6" fill="var(--d2)" stroke="var(--paper)" stroke-width="2.5"/>
+        <text y="18" text-anchor="middle" font-weight="700" fill="var(--ink)">牛车水 🏮</text>
+      </g>
+      <g transform="translate(395,215)" font-size="12">
+        <circle r="6" fill="var(--d2)" stroke="var(--paper)" stroke-width="2.5"/>
+        <text y="-10" text-anchor="middle" font-weight="700" fill="var(--ink)">小印度 🪔</text>
+      </g>
+      <g transform="translate(460,205)" font-size="12">
+        <circle r="6" fill="var(--d2)" stroke="var(--paper)" stroke-width="2.5"/>
+        <text y="-10" text-anchor="middle" font-weight="700" fill="var(--ink)">甘榜格南 🕌</text>
+      </g>
+      <g transform="translate(340,262)" font-size="12">
+        <circle r="6" fill="var(--d2)" stroke="var(--paper)" stroke-width="2.5"/>
+        <text y="-10" text-anchor="middle" font-weight="700" fill="var(--ink)">克拉码头 🚢</text>
+      </g>
+      <g transform="translate(430,268)" font-size="12">
+        <circle r="6" fill="var(--d3)" stroke="var(--paper)" stroke-width="2.5"/>
+        <text y="-10" text-anchor="middle" font-weight="700" fill="var(--ink)">福康宁 · 美术馆</text>
+      </g>
+      <!-- 路线 -->
+      <path d="M620,250 Q540,282 400,300" stroke="var(--d1)" stroke-width="3" fill="none" stroke-dasharray="8 6" stroke-linecap="round" filter="url(#rough2)"/>
+      <path d="M400,300 Q480,330 540,330 M400,300 Q440,330 540,330" stroke="var(--d1)" stroke-width="3" fill="none" stroke-dasharray="8 6" stroke-linecap="round" filter="url(#rough2)"/>
+      <path d="M330,300 Q345,325 360,340" stroke="var(--d2)" stroke-width="3" fill="none" stroke-dasharray="8 6" stroke-linecap="round" filter="url(#rough2)"/>
+      <path d="M360,340 Q370,270 395,215 Q420,185 460,205 Q400,225 340,262" stroke="var(--d2)" stroke-width="3" fill="none" stroke-dasharray="8 6" stroke-linecap="round" filter="url(#rough2)"/>
+      <path d="M430,268 Q420,290 400,300" stroke="var(--d3)" stroke-width="3" fill="none" stroke-dasharray="8 6" stroke-linecap="round" filter="url(#rough2)"/>
+      <path d="M400,300 Q300,240 212,196" stroke="var(--d3)" stroke-width="3" fill="none" stroke-dasharray="8 6" stroke-linecap="round" filter="url(#rough2)"/>
+      <path d="M212,196 Q160,140 96,78" stroke="var(--d3)" stroke-width="3" fill="none" stroke-dasharray="8 6" stroke-linecap="round" filter="url(#rough2)"/>
+      <text x="140" y="300" font-size="26">🌊</text>
+      <text x="565" y="415" font-size="26">🌊</text>
+      <text x="640" y="480" font-size="12" fill="var(--sub)">南 中 国 海</text>
+    </svg>
+    <div class="legend">
+      <span><i style="border-color:var(--d1)"></i>Day1 · 9.26 滨海湾夜景线</span>
+      <span><i style="border-color:var(--d2)"></i>Day2 · 9.27 文化美食线</span>
+      <span><i style="border-color:var(--d3)"></i>Day3 · 9.28 告别&出境线</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. 已确认预订 ============ -->
+<section>
+  <h2><span class="no">3</span>已确认预订</h2>
+  <div class="book-grid">
+    <div class="bk">
+      <h3>✈️ 去程 · 广州 → 新加坡</h3>
+      <div class="row">📅 <b>2026-09-26（周六）</b></div>
+      <div class="row">🕐 <b>14:00 落地</b> 樟宜机场 <span class="tz">SGT</span></div>
+      <div class="row">📍 Changi Airport, Singapore</div>
+      <div class="row">📄 航班号待补充（拿到票后告诉我，我来更新）</div>
+    </div>
+    <div class="bk">
+      <h3>✈️ 离新 · 新山 → 亚庇</h3>
+      <div class="row">📅 <b>2026-09-28（周一）</b></div>
+      <div class="row">🕐 <b>20:10 – 22:30</b> <span class="tz">SGT</span></div>
+      <div class="row">📍 Senai International Airport, Johor</div>
+      <div class="row">📄 亚洲航空（值机前打印登机牌）</div>
+    </div>
+    <div class="bk">
+      <h3>🏨 Studio M Hotel（2 晚）</h3>
+      <div class="row">📅 <b>09.26 入住 – 09.28 退房</b></div>
+      <div class="row">📍 3 Nanson Rd, 罗伯逊码头（克拉码头旁）</div>
+      <div class="row">📞 电话与确认号详见订单邮件</div>
+    </div>
+    <div class="bk none">
+      <h3>🚗 租车：无</h3>
+      <div class="row">全程地铁 + Grab，直接刷 Visa / Apple Pay 进站</div>
+    </div>
+    <div class="bk none">
+      <h3>🎫 门票：均待购买</h3>
+      <div class="row">花穹+云雾林 / 美术馆 / 河游船 → 见待办清单 ③④⑤</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. 逐日行程 ============ -->
+<section>
+  <h2><span class="no">4</span>逐日行程 <span style="font-size:12px;font-weight:400;color:var(--sub)">（时间为新加坡时间 SGT = UTC+8，点标题展开当日路线图）</span></h2>
+
+  <!-- Day 1 -->
+  <div class="day open" id="day1">
+    <div class="day-head" onclick="toggleDay('day1')">
+      <h3><span class="dot" style="background:var(--d1)"></span>Day 1 · 9.26 周六 · 抵达 & 滨海湾夜景线</h3><span class="arrow">▼</span>
+    </div>
+    <div class="day-route">
+      <div class="route-strip">
+        <svg class="route-svg" viewBox="0 0 660 96" style="width:100%">
+          <line x1="30" y1="46" x2="630" y2="46" stroke="var(--d1)" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round"/>
+          <g font-size="11" fill="var(--ink)" text-anchor="middle">
+            <circle cx="30" cy="46" r="9" fill="var(--d1)"/><text x="30" y="20" font-weight="700">✈️樟宜机场</text><text x="30" y="76" fill="var(--sub)" font-size="10">14:00 落地</text>
+            <circle cx="170" cy="46" r="7" fill="var(--d1)"/><text x="170" y="20" font-weight="700">星耀·雨漩涡</text><text x="170" y="76" fill="var(--sub)" font-size="10">15:00</text>
+            <circle cx="310" cy="46" r="7" fill="var(--d1)"/><text x="310" y="20" font-weight="700">🏨Studio M</text><text x="310" y="76" fill="var(--sub)" font-size="10">入住休整</text>
+            <circle cx="410" cy="46" r="7" fill="var(--d1)"/><text x="410" y="20" font-weight="700">🐟鱼尾狮</text><text x="410" y="76" fill="var(--sub)" font-size="10">17:30 傍晚</text>
+            <circle cx="510" cy="46" r="7" fill="var(--d1)"/><text x="510" y="20" font-weight="700">🍖老巴刹</text><text x="510" y="76" fill="var(--sub)" font-size="10">18:30 晚餐</text>
+            <circle cx="610" cy="46" r="9" fill="var(--d1)"/><text x="610" y="20" font-weight="700">🌳灯光秀</text><text x="610" y="76" fill="var(--sub)" font-size="10">20:45</text>
+          </g>
+        </svg>
+      </div>
+      <button class="nav-all" style="background:var(--d1)" onclick="openRoute(['Changi Airport Singapore','Jewel Changi Airport','Studio M Hotel Singapore','Merlion Park Singapore','Lau Pa Sat Singapore','Gardens by the Bay Supertree Grove'])">🧭 一键全天多点导航（Google 地图）</button>
+    </div>
+    <div class="tl">
+      <div class="tl-row"><div class="tl-time">14:00</div><div class="tl-body">✈️ <b>落地樟宜机场</b> <span class="tz">SGT</span>——入境（SGAC 已填则直接刷闸机）→ 取行李</div></div>
+      <div class="tl-row"><div class="tl-time">15:00–16:00</div><div class="tl-body"><span class="place" data-q="Jewel Changi Airport Singapore">星耀樟宜 · 雨漩涡</span>：世界最大室内瀑布，行李可寄存；𝗧𝗶𝗽：就在 T1 对面，不用出机场</div></div>
+      <div class="tl-row"><div class="tl-time">16:00–17:00</div><div class="tl-body">地铁/Grab 入住 <span class="place" data-q="Studio M Hotel Singapore">🏨 Studio M 酒店</span>（罗伯逊码头），放行李、稍作休整</div></div>
+      <div class="tl-row"><div class="tl-time">17:30–18:30</div><div class="tl-body"><span class="place" data-q="Merlion Park Singapore">鱼尾狮公园</span>：傍晚柔光拍金沙倒影，蜜月合影黄金时段</div></div>
+      <div class="tl-row"><div class="tl-time">18:30–19:45</div><div class="tl-body">
+        <div class="meal">🍖 <b>晚餐 · 老巴刹沙爹夜市</b>（<span class="place" data-q="Lau Pa Sat Singapore">Lau Pa Sat</span>）：沙爹串配花生酱 + 炒粿条，人均 SGD 10–20</div>
+        <span class="warn-inline">⚠️ 20:20 前动身去灯光秀：过桥步行 22–25 分钟，赶时间就 Grab 5 分钟直达（SGD 8–10）</span></div></div>
+      <div class="tl-row"><div class="tl-time">20:45–21:15</div><div class="tl-body"><span class="place" data-q="Gardens by the Bay Supertree Grove">擎天树灯光秀</span>：第二场 20:45，户外草坪免费躺看；🎉 顺路逛<b>中秋灯会</b>（展至 10 月初，免费，蜜月氛围彩蛋）</div></div>
+      <div class="tl-row"><div class="tl-time">21:30–</div><div class="tl-body">步行/Grab 回酒店，第一天不赶，睡饱</div></div>
+    </div>
+  </div>
+
+  <!-- Day 2 -->
+  <div class="day" id="day2">
+    <div class="day-head" onclick="toggleDay('day2')">
+      <h3><span class="dot" style="background:var(--d2)"></span>Day 2 · 9.27 周日 · 中峇鲁 + 三大文化街区美食线</h3><span class="arrow">▼</span>
+    </div>
+    <div class="day-route">
+      <div class="route-strip">
+        <svg class="route-svg" viewBox="0 0 660 96" style="width:100%">
+          <line x1="25" y1="46" x2="635" y2="46" stroke="var(--d2)" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round"/>
+          <g font-size="11" fill="var(--ink)" text-anchor="middle">
+            <circle cx="25" cy="46" r="7" fill="var(--d2)"/><text x="25" y="20" font-weight="700">🥣中峇鲁</text><text x="25" y="76" fill="var(--sub)" font-size="10">08:15 早午餐</text>
+            <circle cx="135" cy="46" r="7" fill="var(--d2)"/><text x="135" y="20" font-weight="700">🏮牛车水</text><text x="135" y="76" fill="var(--sub)" font-size="10">11:30</text>
+            <circle cx="265" cy="46" r="7" fill="var(--d2)"/><text x="265" y="20" font-weight="700">🪔小印度</text><text x="265" y="76" fill="var(--sub)" font-size="10">13:30</text>
+            <circle cx="395" cy="46" r="7" fill="var(--d2)"/><text x="395" y="20" font-weight="700">🕌甘榜格南</text><text x="395" y="76" fill="var(--sub)" font-size="10">15:00</text>
+            <circle cx="510" cy="46" r="7" fill="var(--d2)"/><text x="510" y="20" font-weight="700">🏨休整</text><text x="510" y="76" fill="var(--sub)" font-size="10">17:00</text>
+            <circle cx="615" cy="46" r="9" fill="var(--d2)"/><text x="615" y="20" font-weight="700">🚢河游船</text><text x="615" y="76" fill="var(--sub)" font-size="10">20:00</text>
+          </g>
+        </svg>
+      </div>
+      <button class="nav-all" style="background:var(--d2)" onclick="openRoute(['Tiong Bahru Market Singapore','Buddha Tooth Relic Temple Singapore','Maxwell Food Centre Singapore','Tekka Centre Singapore','Sultan Mosque Singapore','Clarke Quay Singapore'])">🧭 一键全天多点导航（Google 地图）</button>
+    </div>
+    <div class="tl">
+      <div class="tl-row"><div class="tl-time">07:45</div><div class="tl-body">地铁出发（罗伯逊码头 → 中峇鲁约 20 分钟）</div></div>
+      <div class="tl-row"><div class="tl-time">08:15–11:00</div><div class="tl-body"><span class="place" data-q="Tiong Bahru Market Singapore">中峇鲁市场食阁</span>——本地人票选"最舒服食阁"，几乎零游客：
+        <div class="meal">🥣 <b>早午餐清单</b>：楗柏水粿（1958 年老档，米其林推荐）· 中峇鲁海南起骨鸡饭 · 海南咖喱饭 · 手工肠粉 · 德成豆浆（⚠️ 周日休息）｜人均 SGD 3–5</div>
+        <span class="badge cash">只收现金</span><span class="badge book">周日部分摊休 · 上午去才全</span> 饭后逛中峇鲁老街 + 湿巴刹</div></div>
+      <div class="tl-row"><div class="tl-time">11:30–13:30</div><div class="tl-body"><span class="place" data-q="Buddha Tooth Relic Temple Singapore">牛车水</span>：佛牙寺（免费，着装过肩过膝）→ 小吃巡礼——<span class="place" data-q="Maxwell Food Centre Singapore">麦士威熟食中心</span> 169 海南鸡饭（SGD 5.5，本地人推荐）+ 老伴豆花 + 甘蔗水；或 <span class="place" data-q="Chinatown Complex Food Centre Singapore">牛车水大厦</span> 福建面<br><span class="warn-inline">⚠️ 天天海南鸡饭排队 40 分钟口碑一般，不推荐专程排</span></div></div>
+      <div class="tl-row"><div class="tl-time">13:30–14:45</div><div class="tl-body"><span class="place" data-q="Tekka Centre Singapore">小印度</span>：竹脚中心现做 Naan（推荐 garlic/cheese，米其林指南收录）+ 拉茶 → <span class="place" data-q="Sri Veeramakaliamman Temple Singapore">维拉马卡里拉曼庙</span> → <span class="place" data-q="Mustafa Centre Singapore">穆斯塔法中心</span>（24h，伴手礼最便宜）</div></div>
+      <div class="tl-row"><div class="tl-time">15:00–16:45</div><div class="tl-body"><span class="place" data-q="Sultan Mosque Singapore">甘榜格南</span>：<b>苏丹回教堂</b>（入内 14:00–16:00，过肩过膝，门口免费借长袍）→ <span class="place" data-q="Haji Lane Singapore">哈芝巷</span>壁画小店 → 阿拉伯街（⚠️ 主街餐厅偏贵，一道菜 SGD 40–50）</div></div>
+      <div class="tl-row"><div class="tl-time">17:00–18:30</div><div class="tl-body">回酒店休整（蜜月节奏：逛吃半天，歇够再出战）</div></div>
+      <div class="tl-row"><div class="tl-time">18:30–20:00</div><div class="tl-body">
+        <div class="meal">🦴 <b>晚餐 · 克拉码头</b>：<span class="place" data-q="Song Fa Bak Kut Teh Clarke Quay Singapore">松发肉骨茶总店</span>（胡椒汤免费续，人均 SGD 18+）；介意排队换发起人肉骨茶</div></div></div>
+      <div class="tl-row"><div class="tl-time">20:00–21:00</div><div class="tl-body"><b>新加坡河游船</b> <span class="badge book">需提前购票</span>：克拉码头 Jetty 登船（提前 15 分钟换票），40 分钟看驳船码头/富丽敦/鱼尾狮/金沙夜景——社区公认"夜间最值的一笔钱"</div></div>
+      <div class="tl-row"><div class="tl-time">21:00–21:45</div><div class="tl-body"><span class="place" data-q="Old Hill Street Police Station Singapore">旧禧街警察局</span> 927 扇彩窗夜景打卡（免费）→ 步行 800m 回酒店</div></div>
+    </div>
+  </div>
+
+  <!-- Day 3 -->
+  <div class="day" id="day3">
+    <div class="day-head" onclick="toggleDay('day3')">
+      <h3><span class="dot" style="background:var(--d3)"></span>Day 3 · 9.28 周一 · 告别午宴 & 过境飞亚庇</h3><span class="arrow">▼</span>
+    </div>
+    <div class="day-route">
+      <div class="route-strip">
+        <svg class="route-svg" viewBox="0 0 660 96" style="width:100%">
+          <line x1="25" y1="46" x2="635" y2="46" stroke="var(--d3)" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round"/>
+          <g font-size="11" fill="var(--ink)" text-anchor="middle">
+            <circle cx="25" cy="46" r="7" fill="var(--d3)"/><text x="25" y="20" font-weight="700">🌳福康宁树洞</text><text x="25" y="76" fill="var(--sub)" font-size="10">09:30</text>
+            <circle cx="150" cy="46" r="7" fill="var(--d3)"/><text x="150" y="20" font-weight="700">🖼️国家美术馆</text><text x="150" y="76" fill="var(--sub)" font-size="10">10:15</text>
+            <circle cx="280" cy="46" r="7" fill="var(--d3)"/><text x="280" y="20" font-weight="700">🦀珍宝午宴</text><text x="280" y="76" fill="var(--sub)" font-size="10">11:45</text>
+            <circle cx="405" cy="46" r="7" fill="var(--d3)"/><text x="405" y="20" font-weight="700">🏨取行李</text><text x="405" y="76" fill="var(--sub)" font-size="10">14:00 出发</text>
+            <circle cx="520" cy="46" r="7" fill="var(--d3)"/><text x="520" y="20" font-weight="700">🛂兀兰关卡</text><text x="520" y="76" fill="var(--sub)" font-size="10">14:45</text>
+            <circle cx="615" cy="46" r="9" fill="var(--d3)"/><text x="615" y="20" font-weight="700">✈️士乃</text><text x="615" y="76" fill="var(--sub)" font-size="10">20:10 起飞</text>
+          </g>
+        </svg>
+      </div>
+      <button class="nav-all" style="background:var(--d3)" onclick="openRoute(['Fort Canning Park Tree Tunnel Singapore','National Gallery Singapore','Jumbo Seafood Riverside Point Singapore','Studio M Hotel Singapore','Woodlands Checkpoint Singapore'])">🧭 一键全天多点导航（Google 地图）</button>
+    </div>
+    <div class="tl">
+      <div class="tl-row"><div class="tl-time">08:30</div><div class="tl-body">酒店早餐或 <span class="place" data-q="Ya Kun Kaya Toast Singapore">亚坤咖椰吐司</span>（半熟蛋+咖椰酱，人均 SGD 5–8）</div></div>
+      <div class="tl-row"><div class="tl-time">09:30–10:15</div><div class="tl-body"><span class="place" data-q="Fort Canning Park Tree Tunnel Singapore">福康宁树洞</span>：旋梯绿荫拍摄点，早去人少；二战迷可顺路 Battlebox 地下指挥所（可选，SGD 20–25）</div></div>
+      <div class="tl-row"><div class="tl-time">10:15–11:30</div><div class="tl-body"><span class="place" data-q="National Gallery Singapore">国家美术馆</span> <span class="badge book">需购票 SGD 20</span>：10:00 开门（周一不闭馆✓）；⚠️ UOB 东南亚展厅临时关闭至 2027</div></div>
+      <div class="tl-row"><div class="tl-time">11:45–13:30</div><div class="tl-body">
+        <div class="meal">🦀 <b>告别午宴 · 珍宝海鲜河畔店</b> <span class="badge book">官网提前订河畔位</span>（<span class="place" data-q="Jumbo Seafood Riverside Point Singapore">Riverside Point</span> 11:30 开门）：辣椒螃蟹 + 炸馒头（招牌必点）；⚠️ 社区口碑两极：只点招牌，其他菜谨慎</div></div></div>
+      <div class="tl-row"><div class="tl-time">13:30–14:00</div><div class="tl-body">河畔散步 → <span class="place" data-q="Old Hill Street Police Station Singapore">旧禧街警察局</span>白天彩窗 → 回酒店取行李</div></div>
+      <div class="tl-row"><div class="tl-time">14:00–14:30</div><div class="tl-body">🚗 <b>Grab 出发兀兰关卡</b>（约 30–45 分钟）——<span class="warn-inline">⚠️ 全程最关键节点：周一晚高峰，14:30 前必须动身</span></div></div>
+      <div class="tl-row"><div class="tl-time">14:45–16:00</div><div class="tl-body">🛂 <span class="place" data-q="Woodlands Checkpoint Singapore">兀兰关卡</span>：新加坡出关 + 新山入关两道排队（向马方出示 MDAC 回执）；🚨 若 16:30 还没过第一道：改走 KTM 火车 Shuttle Tebrau（5 分钟跨海峡，SGD 5）或跨境包车（SGD 90–130）</div></div>
+      <div class="tl-row"><div class="tl-time">16:00–17:00</div><div class="tl-body">新山侧 Grab → <span class="place" data-q="Senai International Airport Johor">士乃机场</span>（约 45 分钟，RM 40–60）</div></div>
+      <div class="tl-row"><div class="tl-time">17:00–20:10</div><div class="tl-body">值机亚航（起飞前 45 分钟截止值机）+ 机场简餐</div></div>
+      <div class="tl-row"><div class="tl-time">20:10–22:30</div><div class="tl-body">✈️ <b>新山 → 亚庇</b>，蜜月海岛篇开启 🏝️（后续：9.29 加雅街 · 9.30 环滩岛浮潜 · 10.2 飞槟城 · 10.5 吉隆坡 · 10.6 回广州）</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. 待办清单 ============ -->
+<section>
+  <h2><span class="no">5</span>待办清单 <span style="font-size:12px;font-weight:400;color:var(--sub)">（办完一项告诉我，我来改页面）</span></h2>
+  <ol class="todo">
+    <li><span class="tag">入境</span><span><b>SGAC 新加坡电子入境卡</b>：一人一卡，<span class="deadline">9.23–9.26 期间</span>在官网提交（抵达前 3 天内才有效，别提前填）</span></li>
+    <li><span class="tag">入境</span><span><b>MDAC 马来西亚电子入境卡</b>：一人一卡，<span class="deadline">9.25 起填</span>（抵达前 72 小时内），保存 PDF 回执给 9.28 过关用</span></li>
+    <li><span class="tag">订位</span><span><b>珍宝海鲜河畔店</b>：官网订 9.28 11:45 午餐河畔位（无预约基本吃不上）</span></li>
+    <li><span class="tag">购票</span><span><b>滨海湾花园 花穹+云雾林联票</b>（约 ¥156/人）：官网/Klook 购，选 9.26 或白天空档</span></li>
+    <li><span class="tag">购票</span><span><b>新加坡河游船</b>（约 ¥135/人）：Klook 购 9.27 晚班次</span></li>
+    <li><span class="tag">购票</span><span><b>国家美术馆</b>（SGD 20/人）：官网购或现场买</span></li>
+    <li><span class="tag">证件</span><span>护照有效期 &gt; 6 个月、空白页 ≥ 2；<b>打印</b>机票行程单 + 酒店确认单 + 保险单</span></li>
+    <li><span class="tag">钱</span><span>换 <b>SGD 300–500 现金</b>（中峇鲁食阁等只收现金）+ 马币 RM 200 左右（士乃/新山打车用）；开通 Visa 闪付/Apple Pay 刷地铁</span></li>
+    <li><span class="tag">App</span><span>装 <b>Grab</b>（绑卡）· <b>Klook</b> · Google Maps 离线地图（新加坡+新山）</span></li>
+    <li><span class="tag">保险</span><span>航意险/延误险（覆盖 9.28 过境误机改签风险）</span></li>
+    <li><span class="tag">装备</span><span>英标转换插头（Type G）· 防晒 · 防蚊液 · 折叠伞 · 薄外套（夜间河船海风）· 泳装（留给沙巴）</span></li>
+    <li><span class="tag">核对</span><span>出发前 3 天用 Google Maps 复核营业状态：中峇鲁周日营业摊位 · 苏丹回教堂开放时段 · 松发排队情况</span></li>
+  </ol>
+</section>
+
+<!-- ============ 6. 实用贴士 ============ -->
+<section>
+  <h2><span class="no">6</span>实用贴士</h2>
+  <ul class="tips">
+    <li><b>Grab 不能跨境</b>：新加坡 ↔ 新山必须"打车到关卡 → 过关 → 对面再打车"两段式，没有一车到底（跨境包车除外）</li>
+    <li><b>罚款红线</b>：地铁饮食最高罚 SGD 2,000 · 乱丢垃圾 SGD 300 起 · 闯红灯 · 公共场所限定点吸烟——电子烟入境即违法，一根都不行</li>
+    <li><b>沙巴入境章</b>：9.28 从新山入马后国内飞亚庇，落地务必确认护照<b>盖了沙巴入境章</b>（东马移民独立，漏盖离境会被罚款甚至拘留）</li>
+    <li><b>花钱节奏</b>：消费税 GST 9%；食阁比餐厅便宜一半以上，餐厅账单常含 10% 服务费；小费不强制</li>
+    <li><b>天气</b>：赤道阵雨说来就来，随身折叠伞；紫外线极强，防晒勤补</li>
+    <li><b>网络</b>：机场买游客 SIM（约 SGD 12/100GB）或开国际漫游</li>
+    <li><b>紧急电话</b>：警察 999 · 火警/急救 995（建议记在锁屏壁纸上）</li>
+    <li><b>过境缓冲</b>：9.28 兀兰关卡预留 75 分钟以上；误机应急预案——亚航 App 当场改签下一班（新山→亚庇每天多班）</li>
+  </ul>
+</section>
+
+<footer>
+  💌 新加坡篇 · 蜜月快乐<br>
+  时间均为 SGT（UTC+8）· 跨时区打开倒计时自动校准 · 页面更新即推送即上线<br>
+  <span id="buildInfo"></span>
+</footer>
+</div>
+
+<script>
+/* ================= 主题：白天黑夜自动 + 手动覆盖 ================= */
+var THEMES=['auto','light','dark'];
+var themeMode=localStorage.getItem('trip-theme')||'auto';
+function applyTheme(){
+  var dark;
+  if(themeMode==='auto'){
+    dark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }else{ dark=themeMode==='dark'; }
+  document.documentElement.classList.toggle('dark',dark);
+  document.getElementById('themeBtn').textContent=dark?'☀️ 白天':'🌙 夜间';
+}
+function cycleTheme(){
+  themeMode=THEMES[(THEMES.indexOf(themeMode)+1)%THEMES.length];
+  localStorage.setItem('trip-theme',themeMode);
+  applyTheme();
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){if(themeMode==='auto')applyTheme();});
+applyTheme();
+
+/* ================= 事件链（全部带时区 SGT +08:00）================= */
+var EVENTS=[
+  {t:'2026-09-26T14:00:00+08:00',l:'✈️ 落地新加坡樟宜机场',s:'广州 → 新加坡 · 蜜月启程'},
+  {t:'2026-09-26T20:45:00+08:00',l:'🌟 擎天树灯光秀（第二场）',s:'滨海湾花园 · 免费 · 顺路中秋灯会'},
+  {t:'2026-09-27T08:15:00+08:00',l:'🥣 中峇鲁早午餐开吃',s:'周日 · 只收现金 · 上午去才全'},
+  {t:'2026-09-27T20:00:00+08:00',l:'🚢 新加坡河夜游船',s:'克拉码头 Jetty 登船'},
+  {t:'2026-09-28T11:45:00+08:00',l:'🦀 珍宝海鲜告别午宴',s:'河畔店 · 需提前订位'},
+  {t:'2026-09-28T14:00:00+08:00',l:'🚗 出发兀兰关卡',s:'全程最关键节点 · 别拖'},
+  {t:'2026-09-28T20:10:00+08:00',l:'✈️ 新山起飞 → 亚庇',s:'士乃机场 · 海岛篇开启'},
+  {t:'2026-09-28T22:30:00+08:00',l:'🏝️ 抵达亚庇（沙巴）',s:'后续大马蜜月进行中'},
+  {t:'2026-09-30T08:00:00+08:00',l:'🤿 环滩岛浮潜日',s:'沙巴 · 当日时间以行程表为准'},
+  {t:'2026-10-02T12:00:00+08:00',l:'🍜 移动日 · 亚庇 → 槟城',s:'晚间航班 · 以行程表为准'},
+  {t:'2026-10-05T12:00:00+08:00',l:'🏙️ 移动日 · 槟城 → 吉隆坡',s:'以行程表为准'},
+  {t:'2026-10-06T18:00:00+08:00',l:'🏠 回广州 · 蜜月收官',s:'吉隆坡 → 广州'}
+];
+function fmtSGT(iso){
+  var d=new Date(iso);
+  return d.toLocaleString('zh-CN',{timeZone:'Asia/Singapore',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+}
+function fmtLocal(iso){
+  var d=new Date(iso);
+  return d.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+}
+function nextEvent(now){
+  for(var i=0;i<EVENTS.length;i++){ if(new Date(EVENTS[i].t).getTime()>now.getTime()) return i; }
+  return -1;
+}
+function tick(){
+  var now=new Date();
+  var idx=nextEvent(now);
+  var eL=document.getElementById('feLabel'),eS=document.getElementById('feSub'),eT=document.getElementById('feTime');
+  var D=document.getElementById('cdD'),H=document.getElementById('cdH'),M=document.getElementById('cdM'),S=document.getElementById('cdS');
+  if(idx<0){
+    eL.textContent='🎉 行程已收官';eS.textContent='新加坡+大马 11 日蜜月 · 完满';eT.textContent='';
+    D.textContent='0';H.textContent='0';M.textContent='0';S.textContent='0';
+  }else{
+    var ev=EVENTS[idx],diff=new Date(ev.t).getTime()-now.getTime();
+    if(diff<0)diff=0;
+    var d=Math.floor(diff/86400000),h=Math.floor(diff/3600000)%24,m=Math.floor(diff/60000)%60,s=Math.floor(diff/1000)%60;
+    eL.textContent=ev.l;eS.textContent=ev.s;
+    eT.textContent=fmtSGT(ev.t)+' SGT ｜ 你的本地时间 '+fmtLocal(ev.t)+'（自动换算，跨时区不会算错）';
+    D.textContent=d;H.textContent=('0'+h).slice(-2);M.textContent=('0'+m).slice(-2);S.textContent=('0'+s).slice(-2);
+  }
+  document.getElementById('clockSG').textContent='🇸🇬 新加坡 '+now.toLocaleTimeString('zh-CN',{timeZone:'Asia/Singapore',hour12:false});
+  var tz=-now.getTimezoneOffset()/60;
+  document.getElementById('clockLocal').textContent='📍 你的时区 '+now.toLocaleTimeString('zh-CN',{hour12:false})+' (UTC'+(tz>=0?'+':'')+tz+')';
+  renderList(now);
+}
+function renderList(now){
+  var nl=document.getElementById('nextList'),idx=nextEvent(now),html='';
+  var show=idx<0?[]:EVENTS.slice(idx,idx+6);
+  for(var i=0;i<show.length;i++){
+    var cls=(i===0)?'next-item now-active':'next-item';
+    html+='<div class="'+cls+'"><span class="nl-t">'+fmtSGT(show[i].t)+' SGT</span><span>'+show[i].l+'</span></div>';
+  }
+  if(!show.length)html='<div class="next-item"><span>全部节点已完成 🎉</span></div>';
+  nl.innerHTML=html;
+}
+setInterval(tick,1000);tick();
+document.getElementById('buildInfo').textContent='v3 · '+new Date().toLocaleDateString('zh-CN');
+
+/* ================= 地点点击 → Google 地图 ================= */
+function openMaps(q){
+  window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q),'_blank');
+}
+document.querySelectorAll('.place').forEach(function(el){
+  el.addEventListener('click',function(){ openMaps(el.getAttribute('data-q')); });
+  el.setAttribute('title','点击打开 Google 地图');
+});
+
+/* ================= 一键全天多点导航 ================= */
+function openRoute(points){
+  var origin=encodeURIComponent(points[0]);
+  var dest=encodeURIComponent(points[points.length-1]);
+  var wps=points.slice(1,-1).join('|');
+  var url='https://www.google.com/maps/dir/?api=1&origin='+origin+'&destination='+dest+'&travelmode=driving';
+  if(wps) url+='&waypoints='+encodeURIComponent(wps);
+  window.open(url,'_blank');
+}
+
+/* ================= 每日路线展开 ================= */
+function toggleDay(id){
+  document.getElementById(id).classList.toggle('open');
+}
+</script>
+</body>
+</html>
